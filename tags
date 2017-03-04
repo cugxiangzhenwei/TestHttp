@@ -1,0 +1,40 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+GetMethod	httpCommon.cpp	/^HTTP_METHOD GetMethod(const std::string & strHeader)$/;"	f	signature:(const std::string & strHeader)
+GetMethod	httpCommon.h	/^HTTP_METHOD GetMethod(const std::string & strHeader);$/;"	p	signature:(const std::string & strHeader)
+GetURL	httpCommon.cpp	/^std::string GetURL(const std::string & strHeader)$/;"	f	signature:(const std::string & strHeader)
+GetURL	httpCommon.h	/^std::string GetURL(const std::string & strHeader);$/;"	p	signature:(const std::string & strHeader)
+HTTP_GET	httpCommon.h	/^ HTTP_GET =0,$/;"	e	enum:__anon1
+HTTP_METHOD	httpCommon.h	/^}HTTP_METHOD;$/;"	t	typeref:enum:__anon1
+HTTP_NONE	httpCommon.h	/^ HTTP_NONE$/;"	e	enum:__anon1
+HTTP_POST	httpCommon.h	/^ HTTP_POST,$/;"	e	enum:__anon1
+HTTP_PUT	httpCommon.h	/^ HTTP_PUT,$/;"	e	enum:__anon1
+I	httpCommon.o	/^’/;"	v
+IsSpace	httpCommon.h	/^inline bool IsSpace(char c)$/;"	f	signature:(char c)
+ProGetRequest	GetRequest.cpp	/^int ProGetRequest(int iSockClient,const std::string &strUrl,const std::string &\/* strHeaders*\/)$/;"	f	signature:(int iSockClient,const std::string &strUrl,const std::string & )
+ProGetRequest	GetRequest.h	/^int ProGetRequest(int iSockClient,const std::string &strUrl,const std::string &\/* strHeaders*\/);$/;"	p	signature:(int iSockClient,const std::string &strUrl,const std::string & )
+ProPostRequest	PostRequest.cpp	/^int ProPostRequest(int\/* iSockClient*\/,const std::string &\/*strUrl*\/,const std::string & \/*strHeaders*\/)$/;"	f	signature:(int ,const std::string & ,const std::string & )
+ProPostRequest	PostRequest.h	/^int ProPostRequest(int iSockClient,const std::string &strUrl,const std::string &\/* strHeaders*\/);$/;"	p	signature:(int iSockClient,const std::string &strUrl,const std::string & )
+SERVER_STRING	httpCommon.h	/^#define SERVER_STRING /;"	d
+SetHomeDir	httpCommon.cpp	/^void SetHomeDir(const char * pszStrHomeDir)$/;"	f	signature:(const char * pszStrHomeDir)
+SetHomeDir	httpCommon.h	/^void SetHomeDir(const char * pszStrHomeDir);$/;"	p	signature:(const char * pszStrHomeDir)
+ThreadFuncClient	main.cpp	/^void * ThreadFuncClient(void *arg)$/;"	f	signature:(void *arg)
+X	httpCommon.o	/^’/;"	v
+Z	httpCommon.o	/^’/;"	v
+format	tags	/^!_TAG_FILE_FORMAT	2	\/extended format; --format=1 will not append ;" to lines\/$/;"	v
+g_strHomeDir	httpCommon.cpp	/^std::string g_strHomeDir;$/;"	v
+getContentTypeFromFileName	fileType.cpp	/^std::string getContentTypeFromFileName(const char* pszFileName)$/;"	f	signature:(const char* pszFileName)
+get_oneline	httpCommon.cpp	/^std::string get_oneline(int iSocket)$/;"	f	signature:(int iSocket)
+get_oneline	httpCommon.h	/^std::string get_oneline(int iSocket);$/;"	p	signature:(int iSocket)
+h	httpCommon.o	/^’/;"	v
+h__debug_line__DWARF	main.o	/^/;"	v
+main	main.cpp	/^int main(int argc,char *argv[])$/;"	f	signature:(int argc,char *argv[])
+s	GetRequest.o	/^	/;"	v
+s	GetRequest.o	/^/;"	v
+sendheaders	httpCommon.cpp	/^void sendheaders(int client, const char *filename,const char *pszFileType,long long iStreamLen) {$/;"	f	signature:(int client, const char *filename,const char *pszFileType,long long iStreamLen)
+sendheaders	httpCommon.h	/^void sendheaders(int client, const char *filename,const char *pszFileType,long long iStreamLen);$/;"	p	signature:(int client, const char *filename,const char *pszFileType,long long iStreamLen)
+stricmp	fileType.cpp	/^#define stricmp /;"	d	file:

@@ -1,94 +1,88 @@
-#include <stdio.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <strings.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <string>
-#include <dirent.h>
-#include<errno.h>
 #include<pthread.h>
-typedef enum
-{
- HTTP_GET =0,
- HTTP_POST,
- HTTP_PUT,
- HTTP_NONE
-}HTTP_METHOD;
-
- HTTP_METHOD GetMethod(const std::string & strHeader)
-{
-	const char * patterns[] = {"GET","POST","PUT",NULL};
-	HTTP_METHOD hm = HTTP_NONE;
-	for(int i=0; patterns[i]!=NULL;i++)
-	{
-		if(strncmp(patterns[i],strHeader.c_str(),strlen(patterns[i]))==0)
-		{
-			hm = (HTTP_METHOD)(i);		
-			break;
-		}	
-	}
-	return hm;
-}
-std::string get_oneline(int iSocket)
-{	
-	int iRead = 0;
-    char c='\0';
-	int i= 0;
-	char * pData = (char*)malloc(1024);
-	while(c!='\n')
-	{
-		iRead = recv(iSocket,&c,1,0);
-		pData[i] = c;
-		if(iRead >0 && c == '\r')
-		{
-			iRead = recv(iSocket,&c,1,MSG_PEEK);
-			if(iRead >0 && c == '\n')
-				iRead = recv(iSocket,&c,1,0);
-			else
-				c = '\n';
-					
-			pData[i] = '\0';
-			break;				
-		}
-		i++;	
-	}
-	std::string str = pData;
-	free(pData);
-	return str;
-}
+#include"httpCommon.h" 
+#include"GetRequest.h"
+#include"PostRequest.h"
 void * ThreadFuncClient(void *arg)
 {
     int * pSocket = (int*)(arg);
 	int iSocket = *pSocket;	
+/*	fd_set recv_fd;
+	FD_ZERO(&recv_fd);
+	FD_SET(iSocket,&recv_fd);
+	struct timeval tv = {3,0};
+	//检测有没有数据到达
+	int iResult = select(0,&recv_fd,NULL,NULL,&tv);
+	if(iResult <=0)
+	{
+		printf("Error to receive headers:%s,select return value:%d,file:%s,line:%d,function:%s\n"
+			,strerror(errno),iResult,__FILE__,__LINE__,__func__);
+		return NULL;
+	}
+*/
 	std::string strHeader;
 	std::string str;
+	printf("开始获取http请求头...\n");
 	do
 	{
 		str = get_oneline(iSocket);
 		strHeader +=str;
 		strHeader += "\n";
 	}while(!str.empty());
-	printf("%s\n",strHeader.c_str());
+	printf("获取http请求头完毕！\n");
+	printf("%s",strHeader.c_str());
 	HTTP_METHOD hm = GetMethod(strHeader);
 	printf("HTTP请求类型:%d\n",hm);
+	std::string strUrl = GetURL(strHeader);
+	printf("HTTP请求URL:%s\n",strUrl.c_str());
+	if(hm == HTTP_GET)
+	{
+		ProGetRequest(iSocket,strUrl,strHeader);		
+	}
+	else if(hm == HTTP_POST)
+	{
+		ProPostRequest(iSocket,strUrl,strHeader);	
+	}
+	printf("处理完成一次客户端请求!\n\n");
 	close(iSocket);
 	return NULL;
 }
+
+void PrintHelp()
+{
+	printf("请指定端口号和工作路径！\n示例:\n./s.exe -p 5000 -d /Usr/xiangzhenwei\n");
+}
 int main(int argc,char *argv[])
 {
-	if(argc <2)
+	if(argc <3)
 	{
-		printf("缺少端口号参数!\n");
+		PrintHelp();
 		return 0;
 	}
-	int iport = atoi(argv[1]);
+	int i=1;
+	int iport = -1;
+	std::string strHome = "";
+	while(argv[i]!=NULL)
+	{
+		if(strcasecmp(argv[i],"-p")==0 && i < argc -1)
+		{
+			i++;
+			iport =  atoi(argv[i]);
+		}	
+		else if(strcasecmp(argv[i],"-d")==0 && i < argc -1)
+		{
+			i++;
+			strHome = argv[i];
+		}
+		else
+			i++;
+	}
+	if(iport <0 || strHome.empty())
+	{
+		printf("端口号或工作目录参数不正确!\n");
+		PrintHelp();
+		return 0;
+	}
+	SetHomeDir(strHome.c_str());
 	int iSockSvr = socket(PF_INET,SOCK_STREAM,0);
 	if(iSockSvr==0)
 	{
