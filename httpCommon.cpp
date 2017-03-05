@@ -77,6 +77,7 @@ std::string get_oneline(int iSocket)
 		}
 		else if(iRead <=0)
 		{
+			printf("get_oneline ,recv failed :%s,retun:%d\n",strerror(errno),iRead);
 			break;
 		}
 		i++;	
@@ -103,27 +104,64 @@ void sendheaders(int client, const char */*filename*/,const char *pszFileType,lo
     int iRev = send(client, buf, strlen(buf), 0);
 	if(iRev < 0)
 	{
-		printf("send failed return:%d\n",iRev);
+		printf("send failed return:%d,error:%s\n",iRev,strerror(errno));
+		return;
 	}
     strcpy(buf, SERVER_STRING);
-    send(client, buf, strlen(buf), 0);
+   	iRev =  send(client, buf, strlen(buf), 0);
+	if(iRev < 0)
+	{
+		printf("send failed return:%d,error:%s\n",iRev,strerror(errno));
+		return;
+	}
     sprintf(buf, "Content-Type: %s\r\n",pszFileType);
-    send(client, buf, strlen(buf), 0);
+    iRev = send(client, buf, strlen(buf), 0);
+	if(iRev < 0)
+	{
+		printf("send failed return:%d,error:%s\n",iRev,strerror(errno));
+		return;
+	}
+	
 //	std::string strTypeStream = "application/octet-stream";
 	sprintf(buf,"Content-Length: %lld\r\n",iStreamLen);
-	send(client,buf,strlen(buf),0);
+	iRev = send(client,buf,strlen(buf),0);
+	if(iRev < 0)
+	{
+		printf("send failed return:%d,error:%s\n",iRev,strerror(errno));
+		return;
+	}
 	strcpy(buf,"Accept-Ranges: bytes\r\n");
-	send(client,buf,strlen(buf),0);
+	iRev =send(client,buf,strlen(buf),0);
+	if(iRev < 0)
+	{
+		printf("send failed return:%d,error:%s\n",iRev,strerror(errno));
+		return;
+	}
 	strcpy(buf,"ETag: \"2f38a6cac7cec51:160c\"\r\n");
-	send(client,buf,strlen(buf),0);
+	iRev = send(client,buf,strlen(buf),0);
+	if(iRev < 0)
+	{
+		printf("send failed return:%d,error:%s\n",iRev,strerror(errno));
+		return;
+	}
 	if(bIsPartial)
 	{
 		sprintf(buf,"Content-Range: bytes %lld-%lld/%lld",iRangeBegin,iRangeEnd,iStreamLen);	
-    	send(client,buf,strlen(buf),0);
+    	iRev = send(client,buf,strlen(buf),0);
+		if(iRev < 0)
+		{
+			printf("send failed return:%d,error:%s\n",iRev,strerror(errno));
+			return;
+		}
 		printf("%s\n",buf);
 	}
     strcpy(buf, "\r\n");
- 	send(client, buf, strlen(buf), 0);
+ 	iRev = send(client, buf, strlen(buf), 0);
+	if(iRev < 0)
+	{
+		printf("send failed return:%d,error:%s\n",iRev,strerror(errno));
+		return;
+	}
 	printf("发送http响应头完毕!\n");
 }
 void not_found(int client) {

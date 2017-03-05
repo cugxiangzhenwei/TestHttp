@@ -3,6 +3,7 @@
 #include"GetRequest.h"
 #include"PostRequest.h"
 #include<log.h>
+#include<signal.h>
 void * ThreadFuncClient(void *arg)
 {
     int * pSocket = (int*)(arg);
@@ -20,7 +21,16 @@ void * ThreadFuncClient(void *arg)
 		return NULL;
 	}
 */
-	std::string strHeader;
+	#ifndef WIN32
+		sigset_t signal_mask;
+		sigemptyset (&signal_mask);
+		sigaddset (&signal_mask, SIGPIPE);
+		int rc = pthread_sigmask (SIG_BLOCK, &signal_mask, NULL);
+		if (rc != 0) {
+		printf("block sigpipe error/n");
+		} 
+	#endif 
+		std::string strHeader;
 	std::string str;
 	printf("开始获取http请求头...\n");
 	do
@@ -85,6 +95,15 @@ int main(int argc,char *argv[])
 	}
 	WriteFormatLog(LOG_TYPE_INFO,"server启动，端口号：%d,工作目录:%s\n",iport,strHome.c_str());
 	SetHomeDir(strHome.c_str());
+	//忽略SIGPIPE信号的方法,避免socket关闭后，发送数据SIGPIPE信号导致进程退出
+	struct sigaction sa;
+	sa.sa_handler = SIG_IGN;//设定接受到指定信号后的动作为忽略
+	sa.sa_flags = 0;
+	if (sigemptyset(&sa.sa_mask) == -1 || //初始化信号集为空
+	sigaction(SIGPIPE, &sa, 0) == -1) { //屏蔽SIGPIPE信号
+	perror("failed to ignore SIGPIPE; sigaction");
+	exit(EXIT_FAILURE);
+	}
 	int iSockSvr = socket(PF_INET,SOCK_STREAM,0);
 	if(iSockSvr==0)
 	{
