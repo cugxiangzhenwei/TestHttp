@@ -52,7 +52,7 @@ std::string get_oneline(int iSocket);
 * @param iStreamLen 消息头后面跟从要发送的实体数据的字节数,如果后续发送的是html，则该值使用默认值-1
 * @return 无返回值
 */
-void sendheaders(int client, const char *filename,const char *pszFileType,long long iStreamLen = -1);
+void sendheaders(int client, const char *filename,const char *pszFileType,long long iStreamLen = -1,long long iRangeBegin=-1,long long iRangeEnd = -1);
 
 /* 发送请求，通知客户端页面无法找到，响应码为404*/
 void not_found(int client);

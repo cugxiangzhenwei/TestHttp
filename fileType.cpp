@@ -26,7 +26,7 @@ std::string getContentTypeFromFileName(const char* pszFileName)
 		|| stricmp(szExt,"hpp")==0
 		|| stricmp(szExt,"cxx")==0
 		|| stricmp(szExt,"xml")==0
-		|| stricmp(szExt,"js")==0
+//		|| stricmp(szExt,"js")==0
 		||stricmp(szExt,"cs")==0
 		||stricmp(szExt,"log")==0
 		|| stricmp(szExt,"ini")==0

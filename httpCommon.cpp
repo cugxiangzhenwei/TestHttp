@@ -86,11 +86,20 @@ std::string get_oneline(int iSocket)
 	free(pData);
 	return str;
 }
-void sendheaders(int client, const char */*filename*/,const char *pszFileType,long long iStreamLen) {
+void sendheaders(int client, const char */*filename*/,const char *pszFileType,long long iStreamLen,long long iRangeBegin,long long iRangeEnd) {
     //先返回文件头部信息
 	printf("sendheaders开始发送http响应头\n");
     char buf[1024];
-    strcpy(buf, "HTTP/1.0 200 OK\r\n");
+	bool bIsPartial = false;
+    if(iRangeBegin >=0 && iRangeEnd >=0)
+		bIsPartial = true;
+	if(!bIsPartial)
+		strcpy(buf, "HTTP/1.0 200 OK\r\n");
+	else
+	{
+		strcpy(buf,"HTT/1.0 206 Partial Content\r\n");
+		printf("http response code 206:partial Content\n");
+	}
     int iRev = send(client, buf, strlen(buf), 0);
 	if(iRev < 0)
 	{
@@ -107,6 +116,12 @@ void sendheaders(int client, const char */*filename*/,const char *pszFileType,lo
 	send(client,buf,strlen(buf),0);
 	strcpy(buf,"ETag: \"2f38a6cac7cec51:160c\"\r\n");
 	send(client,buf,strlen(buf),0);
+	if(bIsPartial)
+	{
+		sprintf(buf,"Content-Range: bytes %lld-%lld/%lld",iRangeBegin,iRangeEnd,iStreamLen);	
+    	send(client,buf,strlen(buf),0);
+		printf("%s\n",buf);
+	}
     strcpy(buf, "\r\n");
  	send(client, buf, strlen(buf), 0);
 	printf("发送http响应头完毕!\n");
