@@ -2,6 +2,7 @@
 #include"httpCommon.h" 
 #include"GetRequest.h"
 #include"PostRequest.h"
+#include<log.h>
 void * ThreadFuncClient(void *arg)
 {
     int * pSocket = (int*)(arg);
@@ -82,6 +83,7 @@ int main(int argc,char *argv[])
 		PrintHelp();
 		return 0;
 	}
+	WriteFormatLog(LOG_TYPE_INFO,"server启动，端口号：%d,工作目录:%s\n",iport,strHome.c_str());
 	SetHomeDir(strHome.c_str());
 	int iSockSvr = socket(PF_INET,SOCK_STREAM,0);
 	if(iSockSvr==0)
