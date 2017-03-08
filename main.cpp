@@ -8,29 +8,14 @@ void * ThreadFuncClient(void *arg)
 {
     int * pSocket = (int*)(arg);
 	int iSocket = *pSocket;	
-/*	fd_set recv_fd;
-	FD_ZERO(&recv_fd);
-	FD_SET(iSocket,&recv_fd);
-	struct timeval tv = {3,0};
-	//检测有没有数据到达
-	int iResult = select(0,&recv_fd,NULL,NULL,&tv);
-	if(iResult <=0)
-	{
-		printf("Error to receive headers:%s,select return value:%d,file:%s,line:%d,function:%s\n"
-			,strerror(errno),iResult,__FILE__,__LINE__,__func__);
-		return NULL;
-	}
-*/
-	#ifndef WIN32
-		sigset_t signal_mask;
-		sigemptyset (&signal_mask);
-		sigaddset (&signal_mask, SIGPIPE);
-		int rc = pthread_sigmask (SIG_BLOCK, &signal_mask, NULL);
-		if (rc != 0) {
+	sigset_t signal_mask;
+	sigemptyset (&signal_mask);
+	sigaddset (&signal_mask, SIGPIPE);
+	int rc = pthread_sigmask (SIG_BLOCK, &signal_mask, NULL);
+	if (rc != 0) {
 		printf("block sigpipe error/n");
-		} 
-	#endif 
-		std::string strHeader;
+	} 
+	std::string strHeader;
 	std::string str;
 	printf("开始获取http请求头...\n");
 	bool bError = false;
@@ -71,6 +56,46 @@ void * ThreadFuncClient(void *arg)
 void PrintHelp()
 {
 	printf("请指定端口号和工作路径！\n示例:\n./s.exe -p 5000 -d /Usr/xiangzhenwei\n");
+}
+int bind_socket(int iport)
+{
+	int iListenfd = socket(PF_INET,SOCK_STREAM,0);
+	if(iListenfd ==-1)
+	{
+		fprintf(stderr,"error socket:%s\n",strerror(errno));
+		return -1;
+	}
+	struct sockaddr_in addr;
+	bzero(&addr,sizeof(struct sockaddr_in));
+	addr.sin_family = AF_INET;		
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	//	inet_pton(AF_INET,ip,&addr.sin_addr);
+	int iRev = bind(iListenfd,(struct sockaddr *)&addr,(socklen_t)sizeof(addr));
+	if(iRev ==-1)
+	{
+		fprintf(stderr,"error bind to port %d,%s\n",iport,strerror(errno));
+		return -1;
+	}		
+	return iListenfd;
+}
+void PrintClientInfo(const struct sockaddr & addrClient,int iSockClient)
+{
+	if(addrClient.sa_family == AF_INET)
+	{
+		struct sockaddr_in * pClientAddr = (struct sockaddr_in *)(&addrClient);
+		printf("client ip:%s,port:%d,sock:%d\n",inet_ntoa(pClientAddr->sin_addr),
+			ntohs(pClientAddr->sin_port),iSockClient);
+	}
+	else if(addrClient.sa_family == AF_INET6)
+	{
+		struct sockaddr_in6 *pClientAddr = (struct sockaddr_in6 *)(&addrClient);
+		char szIp[1024];
+		const char * pszIp = inet_ntop(AF_INET6,&(pClientAddr->sin6_addr),szIp,
+			sizeof(char)*1024);
+		printf("client ip:%s,port:%d,sock:%d\n",pszIp,
+			ntohs(pClientAddr->sin6_port),iSockClient);
+	}
+
 }
 int main(int argc,char *argv[])
 {
@@ -114,25 +139,10 @@ int main(int argc,char *argv[])
 	perror("failed to ignore SIGPIPE; sigaction");
 	exit(EXIT_FAILURE);
 	}
-	int iSockSvr = socket(PF_INET,SOCK_STREAM,0);
-	if(iSockSvr==0)
-	{
-		printf("failed to create socket,file:%s,line:%d,function:%s\n",
-		__FILE__,__LINE__,__func__);
-		return 0;
-	}
-	struct sockaddr_in svrAddr;
-	svrAddr.sin_family = AF_INET;
-	svrAddr.sin_port = htons(iport);	
-	svrAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	int iRev = bind(iSockSvr,(struct sockaddr *)&svrAddr,socklen_t(sizeof(svrAddr)));
-	if(iRev == -1)
-	{
-		printf("bind port %d failed:%s ,file:%s,line:%d,function:%s\n",
-			iport,strerror(errno),__FILE__,__LINE__,__func__);
-		return 0;
-	}
-	iRev = listen(iSockSvr,5);
+	int iSockSvr = bind_socket(iport);
+	if(iSockSvr==-1)
+		return 0;	
+	int iRev = listen(iSockSvr,5);
 	if(iRev == -1)
 	{
 		printf("listen failed:%s ,file:%s,line:%d,function:%s\n",
@@ -143,24 +153,10 @@ int main(int argc,char *argv[])
 	{
 		struct sockaddr addrClient;
 		socklen_t iSockLen = (socklen_t)(sizeof(addrClient));
-		int iSockClient = accept(iSockSvr,(struct sockaddr *)(&addrClient),& iSockLen);	
-		if(addrClient.sa_family == AF_INET)
-		{
-			struct sockaddr_in * pClientAddr = (struct sockaddr_in *)(&addrClient);
-			printf("client ip:%s,port:%d,sock:%d\n",inet_ntoa(pClientAddr->sin_addr),
-				ntohs(pClientAddr->sin_port),iSockClient);
-		}
-		else if(addrClient.sa_family == AF_INET6)
-		{
-			struct sockaddr_in6 *pClientAddr = (struct sockaddr_in6 *)(&addrClient);
-			char szIp[1024];
-		 	const char * pszIp = inet_ntop(AF_INET6,&(pClientAddr->sin6_addr),szIp,
-				sizeof(char)*1024);
-			printf("client ip:%s,port:%d,sock:%d\n",pszIp,
-				ntohs(pClientAddr->sin6_port),iSockClient);
-		}
+		int iClientFd = accept(iSockSvr,(struct sockaddr *)(&addrClient),& iSockLen);	
+		PrintClientInfo(addrClient,iClientFd);
 		pthread_t  pt;
-		iRev = pthread_create(&pt,NULL,ThreadFuncClient,&iSockClient);
+		iRev = pthread_create(&pt,NULL,ThreadFuncClient,&iClientFd);
 	}
 	close(iSockSvr);
 }
