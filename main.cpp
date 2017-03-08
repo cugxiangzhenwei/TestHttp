@@ -33,14 +33,24 @@ void * ThreadFuncClient(void *arg)
 		std::string strHeader;
 	std::string str;
 	printf("开始获取http请求头...\n");
+	bool bError = false;
 	do
 	{
-		str = get_oneline(iSocket);
+		str = get_oneline(iSocket,bError);
+		if(bError)
+			break;
+
 		strHeader +=str;
 		strHeader += "\n";
 	}while(!str.empty());
 	printf("获取http请求头完毕！\n");
 	printf("%s",strHeader.c_str());
+	if(bError)
+	{
+		close(iSocket);
+		printf("获取请求头发生错误，结束客户请求！\n");
+		return NULL;
+	}
 	HTTP_METHOD hm = GetMethod(strHeader);
 	printf("HTTP请求类型:%d\n",hm);
 	std::string strUrl = GetURL(strHeader);

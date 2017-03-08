@@ -42,8 +42,8 @@ HTTP_METHOD GetMethod(const std::string & strHeader);
 *从header中获取请求的URL地址
 */
 std::string GetURL(const std::string & strHeader);
-/*从客户端socket描述符中获取一行数据，读到\r\n结束*/
-std::string get_oneline(int iSocket);
+/*从客户端socket描述符中获取一行数据，读到\r\n结束,返回一行数据，出错时，bError被设置为true*/
+std::string get_oneline(int iSocket,bool & bError);
 /*
 * @brief 发送http响应头
 * @param client 客户端socket描述符

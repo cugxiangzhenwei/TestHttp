@@ -277,8 +277,8 @@ int ProGetRequest(int iSockClient,const std::string &strUrl,const std::string & 
 				else if(*pEnd == '-') // 500- 500字节以后的范围
 				{
 					 sscanf(pRange,"%lld-",&iFileOffset);
-				//	 iReadBytes =  st.st_size - iFileOffset;
-					 iReadBytes = 500;	
+					 iReadBytes =  st.st_size - iFileOffset;
+				//	 iReadBytes = 500;	
 				}
 				else // 100-500  100到500个字节之间的范围
 				{

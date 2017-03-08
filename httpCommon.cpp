@@ -53,13 +53,14 @@ std::string GetURL(const std::string & strHeader)
 	strUrl[iLen] = '\0';
 	return strUrl;
 }
-std::string get_oneline(int iSocket)
+std::string get_oneline(int iSocket,bool & bError)
 {	
 	int iRead = 0;
     char c='\0';
 	int i= 0;
 //	printf("get_oneline开始获取http头一行数据...\n");
 	char * pData = (char*)malloc(1024);
+	bError = false;
 	while(c!='\n')
 	{
 		iRead = recv(iSocket,&c,1,0);
@@ -75,13 +76,23 @@ std::string get_oneline(int iSocket)
 			pData[i] = '\0';
 			break;				
 		}
-		else if(iRead <=0)
+		else if(iRead ==-1)
 		{
 			printf("get_oneline ,recv failed :%s,retun:%d\n",strerror(errno),iRead);
+			bError = true;
 			break;
 		}
+		else if(iRead == 0)
+		{
+			printf("the connection is closed by client!\n");
+			bError = true;
+			break;
+		}	
 		i++;	
 	}
+	if(bError)
+		return "";
+
 //	printf("get_oneline获取http头一行数据结束！\n");
 	std::string str = pData;
 	free(pData);
@@ -92,7 +103,7 @@ void sendheaders(int client, const char */*filename*/,const char *pszFileType,lo
 	printf("sendheaders开始发送http响应头\n");
     char buf[1024];
 	bool bIsPartial = false;
-    if(iRangeBegin >=0 && iRangeEnd >=0)
+    if(iStreamLen >0 &&  (iRangeEnd - iRangeBegin) != iStreamLen)
 		bIsPartial = true;
 	if(!bIsPartial)
 		strcpy(buf, "HTTP/1.0 200 OK\r\n");
