@@ -1,5 +1,7 @@
 #include"UrlCode.h"
 #include<assert.h>
+#include<stdio.h>
+#include<string.h>
 void decode(const char* psrc, char* pdst) {
 
             for (; *psrc != 0; ++psrc) {
@@ -35,7 +37,7 @@ void decode(const char* psrc, char* pdst) {
         }
 
 std::string& encode(const char* psrc, std::string& str)	{
-            str.resize(::strlen(psrc) * 3 + 1, '\0');
+            str.resize(strlen(psrc) * 3 + 1, '\0');
 
             char* pdst = &(*str.begin());
 
