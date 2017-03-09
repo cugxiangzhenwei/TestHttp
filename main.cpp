@@ -69,6 +69,7 @@ int bind_socket(int iport)
 	bzero(&addr,sizeof(struct sockaddr_in));
 	addr.sin_family = AF_INET;		
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(iport);
 	//	inet_pton(AF_INET,ip,&addr.sin_addr);
 	int iRev = bind(iListenfd,(struct sockaddr *)&addr,(socklen_t)sizeof(addr));
 	if(iRev ==-1)
