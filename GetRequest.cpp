@@ -3,6 +3,7 @@
 #include<log.h>
 #include<vector>
 #include<assert.h>
+#include<string.h>
 std::string strJsFunResizeImg ="\
 <script language=\"JavaScript\">\
 		function resizeimg(obj,maxW,maxH)\
@@ -73,7 +74,7 @@ void list_dir_images(int client,const char * pszWorkDir,const char * url)
 	}
 	for(size_t i=0;i<vFolders.size();i++)
 	{
-		char * pName = strrchr(vFolders[i].c_str(),'/');
+		char * pName = strrchr((char*)vFolders[i].c_str(),'/');
 		if(pName)
 		{
 			char name[256];
@@ -93,7 +94,7 @@ void list_dir_images(int client,const char * pszWorkDir,const char * url)
 	}
 	for(size_t i=0;i<vImages.size();i++)
 	{
-		char * pName = strrchr(vImages[i].c_str(),'/');
+		char * pName = strrchr((char*)vImages[i].c_str(),'/');
 		if(pName)
 		{
 			char name[256];
@@ -147,7 +148,7 @@ void list_dir_items(int client,const char * pszWorkDir,const char * url)
       else
       {
             char szBuffer[2048];
-			sprintf(szBuffer,"&nbsp;<A href=\"%s%s\">%s</A>&nbsp;&nbsp;%lld&nbsp;bytes<br/>"
+			sprintf(szBuffer,"&nbsp;<A href=\"%s%s\">%s</A>&nbsp;&nbsp;%ld&nbsp;bytes<br/>"
 			,url,entry->d_name,entry->d_name,statbuf.st_size );
 			send(client,szBuffer,strlen(szBuffer),0);
       }
@@ -260,7 +261,7 @@ int ProGetRequest(int iSockClient,const std::string &strUrl,const std::string & 
 		else
 		{*/
 			WriteFormatLog(LOG_TYPE_INFO,"serve_file 准备调用：%s",strFullPath.c_str());
-			char * pRange = strstr(strHeaders.c_str(),"Range: bytes=");
+			char * pRange = strstr((char*)strHeaders.c_str(),"Range: bytes=");
 			long long iFileOffset = 0;
 			long long iReadBytes  = st.st_size;
 			if(pRange)

@@ -1,4 +1,5 @@
 #include<string>
+#include<string.h>
 using namespace std;
 #define stricmp strcasecmp
 std::string getContentTypeFromFileName(const char* pszFileName)

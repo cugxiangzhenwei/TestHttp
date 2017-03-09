@@ -1,5 +1,5 @@
 objs = main.o fileType.o httpCommon.o GetRequest.o PostRequest.o UrlCode.o
-libs = -llog4cplus -llog -I/usr/local/lib
+libs = -lpthread -llog -llog4cplus -I/usr/local/lib
 cc   = g++
 flags = -W -Wall -g 
 target = s.exe
