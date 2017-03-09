@@ -1,62 +1,75 @@
 #include"UrlCode.h"
 #include<assert.h>
-unsigned char ToHex(unsigned char x) 
-{ 
-    return  x > 9 ? x + 55 : x + 48; 
-}
+void decode(const char* psrc, char* pdst) {
 
-unsigned char FromHex(unsigned char x) 
-{ 
-    unsigned char y;
-    if (x >= 'A' && x <= 'Z') y = x - 'A' + 10;
-    else if (x >= 'a' && x <= 'z') y = x - 'a' + 10;
-    else if (x >= '0' && x <= '9') y = x - '0';
-    else
-	{
-		y = x;
-	}
-    return y;
-}
+            for (; *psrc != 0; ++psrc) {
 
+                if (*psrc == '%') {
+
+                    int code;
+                    if (sscanf(psrc+1, "%02x", &code) != 1) 
+                        code = '?';
+                    *pdst++ = code;
+                    psrc += 2;
+                }
+                else {
+                    *pdst++ = *psrc;
+                }
+            }
+        }
+
+  bool need_encoding(const char ch) {
+            const unsigned char *p = (const unsigned char*)&ch;
+            return (*p >  126 || *p == '&' || *p == ' ' || *p == '=' || *p == '%' || 
+                *p == '.' || *p == '/' || *p == '+' || 
+                *p == '`' || *p == '{' || *p == '}' || *p == '|' || *p == '[' ||
+                *p == ']' || *p == '\"' || *p == '<' || *p == '>' || *p == '\\' ||
+                *p == '^' || *p == ';' || *p == ':');
+        }
+ 	 bool need_encoding(const char* pcsz) {
+            for (; *pcsz != 0; ++pcsz) {
+                if (need_encoding(*pcsz))
+                    return true;
+            }
+            return false;
+        }
+
+std::string& encode(const char* psrc, std::string& str)	{
+            str.resize(::strlen(psrc) * 3 + 1, '\0');
+
+            char* pdst = &(*str.begin());
+
+            for (; *psrc != 0; ++psrc) {
+
+                unsigned char* p = (unsigned char*)psrc;
+                if (need_encoding(*p)) {
+
+                    char a[3];
+                    sprintf(a, "%02x", *p);
+                    *pdst = '%';
+                    *(pdst + 1) = a[0];
+                    *(pdst + 2) = a[1];
+                    pdst += 3;
+                }
+                else {
+                    *pdst++ = *p;
+                }
+            }
+
+            str.resize(pdst - &(*str.begin()));
+
+            return str;
+        }
 std::string UrlEncode(const std::string& str)
 {
-    std::string strTemp = "";
-    size_t length = str.length();
-    for (size_t i = 0; i < length; i++)
-    {
-        if (isalnum((unsigned char)str[i]) || 
-            (str[i] == '-') ||
-            (str[i] == '_') || 
-            (str[i] == '.') || 
-            (str[i] == '~'))
-            strTemp += str[i];
-        else if (str[i] == ' ')
-            strTemp += "+";
-        else
-        {
-            strTemp += '%';
-            strTemp += ToHex((unsigned char)str[i] >> 4);
-            strTemp += ToHex((unsigned char)str[i] % 16);
-        }
-    }
-    return strTemp;
+	std::string strTmp = str;
+	return encode(str.c_str(),strTmp);
 }
-
 std::string UrlDecode(const std::string& str)
 {
-    std::string strTemp = "";
-    size_t length = str.length();
-    for (size_t i = 0; i < length; i++)
-    {
-        if (str[i] == '+') strTemp += ' ';
-        else if (str[i] == '%')
-        {
-            assert(i + 2 < length);
-            unsigned char high = FromHex((unsigned char)str[++i]);
-            unsigned char low = FromHex((unsigned char)str[++i]);
-            strTemp += high*16 + low;
-        }
-        else strTemp += str[i];
-    }
-    return strTemp;
+	std::string strOut;
+	strOut.resize(str.size());
+	decode(str.c_str(),&strOut[0]);
+	return strOut;
 }
+
